@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "noImplicitAny": true,
+    "declaration": true,
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"]
+  },
+  "files": [
+    "src/runPython.ts",
+    "src/skulpt.worker.ts",
+  ]
+}
