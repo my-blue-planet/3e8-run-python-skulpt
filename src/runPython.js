@@ -12,17 +12,21 @@ export function runPython(config) {
     const validator = config.validator || ((code) => false);
     const subscribers = config.subscribers;
     const addLib = config.addLib;
+    const verbose = config.verbose;
     //console.log(code.indexOf("\r"), code.split("\n").slice(1).join("\n"), tj && tj.findAllErrors(code.split("\n").slice(1).join("\n")));
-    console.log(config);
+    if (verbose)
+        console.log(config);
     const w = new Worker(blobURL);
     outputElement.innerHTML = '';
     function closeWorker(w) {
-        console.log("close");
+        if (verbose)
+            console.log("close");
         w.dispatchEvent(new CustomEvent("terminate"));
         w.terminate();
     }
     w.onmessage = function (event) {
-        console.log(event);
+        if (verbose)
+            console.log(event);
         // @ts-ignore
         const { type, payload } = JSON.parse(event.data);
         if (type === 'exit') {
@@ -35,7 +39,8 @@ export function runPython(config) {
                 div.textContent = t;
                 outputElement && outputElement.append(div);
             });
-            console.log(payload);
+            if (verbose)
+                console.log(payload);
         }
         if (type === 'show') {
             show(payload);
@@ -59,7 +64,8 @@ export function runPython(config) {
         }
     };
     if (addLib) {
-        console.log(addLib);
+        if (verbose)
+            console.log(addLib);
         w.postMessage({ type: "addLib", addLib });
     }
     setTimeout(() => w.postMessage({ type: "run", code }), 10);

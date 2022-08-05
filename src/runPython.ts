@@ -18,7 +18,8 @@ export interface IRunConfig {
   show?: (payload: any)=>void
   validator?: (code: string)=>boolean
   subscribers?: IRunSubscriber
-  addLib?: Record<string, any>
+  addLib?: Record<string, any>,
+  verbose?: boolean
 }
 
 export function runPython(config: IRunConfig) {
@@ -28,25 +29,26 @@ export function runPython(config: IRunConfig) {
   const outputElement = config.outputElement || document.createElement("div")
   const show = config.show || ((payload: any)=>0)
   const validator = config.validator || ((code: string)=>false)
-  const subscribers = config.subscribers
+  const subscribers = config.subscribers || {sendReadySignal: (readySignal)=>{}}
   const addLib = config.addLib
+  const verbose = config.verbose
 
 
   //console.log(code.indexOf("\r"), code.split("\n").slice(1).join("\n"), tj && tj.findAllErrors(code.split("\n").slice(1).join("\n")));
-  console.log(config);
+  if(verbose) console.log(config);
 
   const w = new Worker(blobURL);
 
   outputElement.innerHTML = '';
 
   function closeWorker(w: Worker) {
-    console.log("close");
+    if(verbose) console.log("close");
     w.dispatchEvent(new CustomEvent("terminate"));
     w.terminate();
   }
 
   w.onmessage = function(event: { data : {type: string, payload: any}}) {
-    console.log(event);
+    if(verbose) console.log(event);
     // @ts-ignore
     const {type, payload} = JSON.parse(event.data)
     if (type === 'exit') {
@@ -59,7 +61,7 @@ export function runPython(config: IRunConfig) {
         div.textContent = t;
         outputElement && outputElement.append(div);
       });
-      console.log(payload);
+      if(verbose) console.log(payload);
     }
     if (type === 'show') {
       show(payload)
@@ -83,7 +85,7 @@ export function runPython(config: IRunConfig) {
     }
   };
   if(addLib) {
-    console.log(addLib);
+    if(verbose) console.log(addLib);
     w.postMessage({type: "addLib", addLib});
   }
   setTimeout(()=>w.postMessage({type: "run", code}), 10);

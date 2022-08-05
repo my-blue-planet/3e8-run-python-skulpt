@@ -9,6 +9,7 @@ export interface IRunConfig {
     validator?: (code: string) => boolean;
     subscribers?: IRunSubscriber;
     addLib?: Record<string, any>;
+    verbose?: boolean;
 }
 export declare function runPython(config: IRunConfig): Worker;
 export {};
