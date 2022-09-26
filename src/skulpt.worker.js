@@ -35,6 +35,8 @@ function init() {
     };
     // list of ready js tasks
     const ready = {};
+    //SharedArrayBuffers
+    const sharedArrayBuffers = {};
     const customBuiltins = {
         show: function (payload) {
             return sendMessage("show", { "show": Sk.ffi.remapToJs(payload) }); //mayBe unwrap
@@ -59,7 +61,23 @@ function init() {
         getWorkerState: function (key) {
             let keyJsString = Sk.ffi.remapToJs(key);
             return Sk.ffi.remapToPy(state[keyJsString]);
-        }
+        },
+        readShared: function (namepy, index) {
+            let name = Sk.ffi.remapToJs(namepy);
+            if (!sharedArrayBuffers[name]) {
+                console.warn(`${name} is not a shared buffer`);
+                return -1;
+            }
+            return Sk.ffi.remapToPy(sharedArrayBuffers[name][Sk.ffi.remapToJs(index)]);
+        },
+        writeShared: function (namepy, index, value) {
+            let name = Sk.ffi.remapToJs(namepy);
+            if (!sharedArrayBuffers[name]) {
+                console.warn(`${name} is not a shared buffer`);
+                return -1;
+            }
+            sharedArrayBuffers[name][Sk.ffi.remapToJs(index)] = Sk.ffi.remapToJs(value);
+        },
     };
     for (let name of Object.keys(customBuiltins)) {
         Sk.builtin[name] = Sk.builtins[name] = customBuiltins[name];
@@ -82,6 +100,9 @@ function init() {
         },
         readysignal(e) {
             ready[e.data.readysignal] = { payload: e.data.payload };
+        },
+        addSharedArrayBuffer(e) {
+            sharedArrayBuffers[e.data.name] = e.data.payload;
         }
     };
     globalThis.addEventListener('message', (e) => {

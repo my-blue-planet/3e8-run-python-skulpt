@@ -1,4 +1,5 @@
 interface IRunSubscriber {
+    addSharedArrayBuffer: (name: string, payload: ArrayBuffer) => void;
     sendReadySignal: (readySignal: string, payload: any) => void;
 }
 export interface IRunConfig {

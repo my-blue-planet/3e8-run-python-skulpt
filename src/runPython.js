@@ -10,7 +10,7 @@ export function runPython(config) {
     const outputElement = config.outputElement || document.createElement("div");
     const show = config.show || ((payload) => 0);
     const validator = config.validator || ((code) => false);
-    const subscribers = config.subscribers;
+    const subscribers = config.subscribers || { sendReadySignal: (readySignal) => { }, addSharedArrayBuffer: () => { } };
     const addLib = config.addLib;
     const verbose = config.verbose;
     //console.log(code.indexOf("\r"), code.split("\n").slice(1).join("\n"), tj && tj.findAllErrors(code.split("\n").slice(1).join("\n")));
@@ -72,6 +72,10 @@ export function runPython(config) {
     if (subscribers)
         subscribers.sendReadySignal = (readysignal, payload) => {
             w.postMessage({ type: "readysignal", readysignal, payload });
+        };
+    if (subscribers)
+        subscribers.addSharedArrayBuffer = (name, payload) => {
+            w.postMessage({ type: "addSharedArrayBuffer", name, payload });
         };
     //send keyboard events
     window.addEventListener("keydown", e => {

@@ -8,6 +8,7 @@ const blob = new Blob([workercode]);
 const blobURL = window.URL.createObjectURL(blob);
 
 interface IRunSubscriber {
+  addSharedArrayBuffer: (name: string, payload: ArrayBuffer) => void
   sendReadySignal: (readySignal: string, payload: any)=>void
 }
 
@@ -29,7 +30,7 @@ export function runPython(config: IRunConfig) {
   const outputElement = config.outputElement || document.createElement("div")
   const show = config.show || ((payload: any)=>0)
   const validator = config.validator || ((code: string)=>false)
-  const subscribers = config.subscribers || {sendReadySignal: (readySignal)=>{}}
+  const subscribers = config.subscribers || {sendReadySignal: (readySignal)=>{}, addSharedArrayBuffer: ()=>{}}
   const addLib = config.addLib
   const verbose = config.verbose
 
@@ -92,6 +93,9 @@ export function runPython(config: IRunConfig) {
 
   if(subscribers) subscribers.sendReadySignal = (readysignal, payload) => {
     w.postMessage({type: "readysignal", readysignal, payload})
+  };
+  if(subscribers) subscribers.addSharedArrayBuffer = (name, payload) => {
+    w.postMessage({type: "addSharedArrayBuffer", name, payload})
   };
 
   //send keyboard events

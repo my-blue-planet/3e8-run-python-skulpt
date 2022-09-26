@@ -48,6 +48,8 @@ function init() {
   }
   // list of ready js tasks
   const ready: Record<string, any> = {};
+  //SharedArrayBuffers
+  const sharedArrayBuffers: Record<string, Uint8Array | Uint32Array> = {}
 
   const customBuiltins = {
     show: function(payload: any)  {
@@ -72,7 +74,23 @@ function init() {
     getWorkerState: function(key: string) {
       let keyJsString = Sk.ffi.remapToJs(key);
       return Sk.ffi.remapToPy(state[keyJsString]);
-    }
+    },
+    readShared: function(namepy: string, index: number) {
+      let name = Sk.ffi.remapToJs(namepy)
+      if(!sharedArrayBuffers[name]) {
+        console.warn(`${name} is not a shared buffer`);
+        return -1
+      }
+      return Sk.ffi.remapToPy(sharedArrayBuffers[name][Sk.ffi.remapToJs(index)]);
+    },
+    writeShared: function(namepy: string, index: number, value: number) {
+      let name = Sk.ffi.remapToJs(namepy)
+      if(!sharedArrayBuffers[name]) {
+        console.warn(`${name} is not a shared buffer`);
+        return -1
+      }
+      sharedArrayBuffers[name][Sk.ffi.remapToJs(index)] = Sk.ffi.remapToJs(value)
+    },
   }
 
   for(let name of Object.keys(customBuiltins) as (keyof typeof customBuiltins)[]) {
@@ -95,6 +113,9 @@ function init() {
     },
     readysignal(e: WorkerEvent) {
       ready[e.data.readysignal as string] = {payload: e.data.payload};
+    },
+    addSharedArrayBuffer(e: WorkerEvent) {
+      sharedArrayBuffers[e.data.name] = e.data.payload
     }
   }
 
