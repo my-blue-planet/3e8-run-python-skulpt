@@ -76,7 +76,13 @@ function init() {
                 console.warn(`${name} is not a shared buffer`);
                 return -1;
             }
-            sharedArrayBuffers[name][Sk.ffi.remapToJs(index)] = Sk.ffi.remapToJs(value);
+            if (sharedArrayBuffers[name] instanceof Uint8Array) {
+                let v = Sk.ffi.remapToJs(value);
+                sharedArrayBuffers[name][Sk.ffi.remapToJs(index)] = v < 0 ? 0 : v > 255 ? 255 : v; // clip
+            }
+            else {
+                sharedArrayBuffers[name][Sk.ffi.remapToJs(index)] = Sk.ffi.remapToJs(value);
+            }
         },
     };
     for (let name of Object.keys(customBuiltins)) {

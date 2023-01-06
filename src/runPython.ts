@@ -7,7 +7,7 @@ const workercode = WORKERCODE1 + "\n" + WORKERCODE2 + "\n" + WORKERCODE3
 const blob = new Blob([workercode]);
 const blobURL = window.URL.createObjectURL(blob);
 
-interface IRunSubscriber {
+export interface IRunSubscriber {
   addSharedArrayBuffer: (name: string, payload: ArrayBuffer) => void
   sendReadySignal: (readySignal: string, payload: any)=>void
 }
